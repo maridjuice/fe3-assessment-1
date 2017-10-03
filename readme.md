@@ -1,73 +1,109 @@
-# ![Assessment 1][banner]
+# The First Assessment
 
-This repository can be forked for [**assessment 1**][a1] of [Frontend 3][fe3]
-at [**@CMDA**][cmda].
+We were given 3 types of data files which we could choose from. We then had to place this data into a appropriate graph working with the D3 library.
+This turned out to be Mike Bostocks [Bivariate Area Chart](https://bl.ocks.org/mbostock/3884914)
 
-## TODO
+![Preview](preview.png)
 
-*   [ ] [GitHub Pages](#github-pages)
-*   [ ] [Metadata](#metadata)
-*   [ ] [Workflow](#workflow)
-*   [ ] Replace this document in your fork with your own readme!
+## Steps
 
-## GitHub Pages
+These are the steps I've taken to set-up the graph as you can see in the preview.
 
-Set up [GitHub Pages][pages] for this fork through the **Settings** pane.  Use
-the **Master branch** as its source.
+* Acquire source files from Mike Bostocks [Bivariate Area Chart](https://bl.ocks.org/mbostock/3884914)
+* Seperated HTML, JS and CSS and linked properly
+* Linked the correct csv instead of tsv
+```Javascript
+d3.csv("temperature.csv", function (error, data) 
+```
+* Changed the key values in the js. These were still connected to the old values. This also required a bit of tweaking of the way d3 handles the code. (See next chapter "Fixes" for a more in-dept view of the changes.
+*  Updated the D3 library from V3 to V4
+* placed comments to make all D3 code understandable
+* Styled the graph
+* Added the label "year" at the bottom of the graph
 
-## Metadata
 
-Edit the **description** and **url** of your repository.  Click on edit above
-the green Clone or download button and fill in your correct information.
+## Fixes 
 
-## Workflow
+In this part I will show a more indept view of the changes I've made to the code to make it work with my data.
 
-How you go about your project is up to you other than that it must meet the
-given requirements.  The following steps may help to tackle this challenge
-though.
+**NOTE:** This is not the complete code. That can be found in the files.
 
-###### Explore
+**Old Code**
+```Javascript
+  //Example code
+  var area = d3.svg.area()
+      .x(function(d) { return x(d.date); })
+      .y0(function(d) { return y(d.low); })
+      .y1(function(d) { return y(d.high); });
+ 
+ d3.tsv("data.tsv", function(error, data) {
+  if (error) throw error;
 
-Explore the [data][].  Make sense of the rows, columns, and what they contain.
-Investigate interesting aspects and possible outcomes.  Figure out what type of
-chart you want and sketch your visualisation.
+  data.forEach(function(d) {
+    d.date = parseDate(d.date);
+    d.low = +d.low;
+    d.high = +d.high;
+  });
 
-List the features needed to make your chart work and make sure they match our
-[rubric][].  For example, pie charts or donut charts often lack features needed
-to get good grades in the **application of subject matter** category.  You must
-compensate with other useful features to get a good grade in this case.
+  x.domain(d3.extent(data, function(d) { return d.date; }));
+  y.domain([d3.min(data, function(d) { return d.low; }), d3.max(data, function(d) { return d.high; })]);
+      
+```
+ **Fixed keys:**
+ 
+ ```Javascript //Re:written code
+  var
+    area  = d3.line()
+            .x(function(d) { return x(d.date) })
+            .y(function(d) { return y(d.temp) })
+            
+            
+d3.csv("temperature.csv", function (error, data) { //From now on the data in temperature.csv is loaded into the parameter data
+    if (error) throw error; //this gives an error if something is wrong
 
-Pick the most enticing data and copy it to your fork.
+    data.forEach(function (d) { //processes each data field in the parameter data, which we loaded in before with d3.csv etc..
+        d.date = parseDate(d.date); //all data under the field .date from the csv is processed into an actual date - this "parseDate" function was defined earlier using "d3.time.format("%Y%m%d").parse;" on line 10.
+        d.temp = +d.temp; //processes each field under "temp" in a logical order
+    });
 
-###### Process
+    x.domain(d3.extent(data, function (d) {
+        return d.date; //returns all date values in data to the .extent function which finds the minimum and maximum values in the array, whereafter the .domain function returns those values to d3 as the range for the x axis - http://www.d3noob.org/2012/12/setting-scales-domains-and-ranges-in.html
+    }));
 
-Describe the purpose and background of your visualisation in your fork’s readme.
-Portray your data and list the d3 features.
+    y.domain(d3.extent(data, function (d) {
+        return d.temp; //The same happens here as bove but then for the y axis. This lets d3 know what the scope of data will be, which is then passed onto the scale
+    }));
+            
+```
 
-Start writing code.  Feel free to use example code found on the web but make
-sure to include correct citations.  Use inline code comments to describe
-anything of interest.  Don’t forget to document your process.
+## Comments
 
-###### Review
+If you download the js file, you will find a lot of comments explaining the code. 
 
-Finish up your readme and review your project.  Audit the code and docs.
-Evaluate whether the project matches our [rubric][] and make changes where
-needed.
+## Sources
 
-Include anything you’re particularly proud of and mention anything that was
-exceptionally hard to accomplish in your readme to make sure lecturers don’t
-miss it!  🌟
+These were the source I've used to help me understand the D3 Library
 
-[banner]: https://cdn.rawgit.com/cmda-fe3/logo/3b150735/banner-assessment-1.svg
+* https://stackoverflow.com/questions/11488194/how-to-use-d3-min-and-d3-max-within-a-d3-json-command
+* http://www.d3noob.org/2012/12/setting-scales-domains-and-ranges-in.html
+* http://www.recursion.org/d3-for-mere-mortals/
+* https://stackoverflow.com/questions/17057809/d3-js-what-is-g-in-appendg-d3-js-code
+* https://www.dashingd3js.com/d3js-axes
+* https://www.dashingd3js.com/d3js-scales
+* https://www.dashingd3js.com/svg-paths-and-d3js
+* https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute/dy
+* https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute/text-anchor
+* https://github.com/d3/d3-selection/blob/master/README.md#selection_datum
 
-[a1]: https://github.com/cmda-fe3/course-17-18/tree/master/assessment-1#description
+## Features
+*  [D3 Time](https://github.com/d3/d3/blob/master/API.md#time-formats-d3-time-format)       - https://github.com/d3/d3/blob/master/API.md#time-formats-d3-time-format
+*  [D3 Shapes](https://github.com/d3/d3/blob/master/API.md#shapes-d3-shape)     - https://github.com/d3/d3/blob/master/API.md#shapes-d3-shape
+*  [D3 Scale](https://github.com/d3/d3/blob/master/API.md#scales-d3-scale)     - https://github.com/d3/d3/blob/master/API.md#scales-d3-scale
+*  [D3 Axis](https://github.com/d3/d3/blob/master/API.md#axes-d3-axis)     - https://github.com/d3/d3/blob/master/API.md#axes-d3-axis
+*  [D3 Selections](https://github.com/d3/d3/blob/master/API.md#selections-d3-selection)     - https://github.com/d3/d3/blob/master/API.md#selections-d3-selection
 
-[data]: https://github.com/cmda-fe3/course-17-18/tree/master/assessment-1#data
+## License
 
-[rubric]: https://github.com/cmda-fe3/course-17-18/tree/master/assessment-1#rubric
+MIT - 2017 Marius Vledder
 
-[fe3]: https://github.com/cmda-fe3
 
-[cmda]: https://github.com/cmda
-
-[pages]: https://pages.github.com
